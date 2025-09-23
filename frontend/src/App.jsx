@@ -1,17 +1,44 @@
-import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import GetCurrentUser from "./customHooks/getCurrentUser";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import GetUsers from "./customHooks/GetUsers";
+import { io } from "socket.io-client";
+import { useEffect } from "react";
+import { serverUrl } from "./main";
+import { setSocket, getOnlineUsers } from "./redux/userSlice";
 
 const App = () => {
   GetCurrentUser();
   GetUsers();
-  const { userData } = useSelector((state) => state.user);
+  const { userData, socket } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (userData) {
+      const socketio = io(`${serverUrl}`, {
+        query: {
+          userId: userData?._id,
+        },
+      });
+      dispatch(setSocket(socketio));
+
+      socketio.on("getOnlineUsers", (users) => {
+        dispatch(getOnlineUsers(users));
+      });
+
+      return () => socketio.close();
+    } else {
+      if (socket) {
+        socket.close();
+        dispatch(setSocket(null));
+      }
+    }
+  }, [userData, dispatch]);
+
   return (
     <Routes>
       <Route

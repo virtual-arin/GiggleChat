@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import MessageArea from "../components/MessageArea";
 import Sidebar from "../components/Sidebar";
+import GetMessage from "../customHooks/GetMessage";
 
 const Home = () => {
   const [selectedUser, setSelectedUser] = useState(null);
-
+  GetMessage();
   return (
     <div className="flex h-screen w-full flex-col lg:flex-row">
       {/* Sidebar */}
