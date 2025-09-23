@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import { serverUrl } from "../main";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -10,6 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const dispatch = useDispatch();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,16 +28,16 @@ const Login = () => {
         },
         { withCredentials: true }
       );
-      console.log(result);
+      dispatch(setUserData(result.data));
       setEmail("");
       setPassword("");
+      setLoading(false);
+      setError("");
     } catch (error) {
       setError(
         error.response?.data?.message || "An error occurred during login."
       );
       console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
 

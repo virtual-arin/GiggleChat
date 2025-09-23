@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { serverUrl } from "../main";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +13,8 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -27,12 +31,12 @@ const Signup = () => {
         },
         { withCredentials: true }
       );
-      console.log(result);
+      dispatch(setUserData(result.data));
+      navigate("/profile");
     } catch (error) {
       setError(
         error.response?.data?.message || "An error occurred during signup."
       );
-      console.error("An error occurred while signup:", error);
     } finally {
       setLoading(false);
     }
