@@ -25,10 +25,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/message", messageRouter);
 
-app.get("/", (req, res) => {
-  res.send("Welcome back arin!");
-});
-
 server.listen(port, () => {
   connectDatabase();
   console.log(`Server is listening to port ${port}`);
