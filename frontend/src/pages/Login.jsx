@@ -19,6 +19,12 @@ const Login = () => {
     setLoading(true);
     setError(null);
 
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const result = await axios.post(
         `${serverUrl}/api/auth/login`,
@@ -38,6 +44,7 @@ const Login = () => {
         error.response?.data?.message || "An error occurred during login."
       );
       console.error(error);
+      setLoading(false);
     }
   };
 

@@ -10,15 +10,19 @@ import {
 } from "react-icons/fi";
 import profile from "../assets/profile.svg";
 import EmojiPicker from "emoji-picker-react";
-import { setMessages } from "../redux/messageSlice";
+import { setSelectedUser } from "../redux/userSlice";
+import { addMessage, setMessages } from "../redux/messageSlice";
 import GetMessage from "../customHooks/GetMessage";
 import axios from "axios";
 import { serverUrl } from "../main";
 import SenderMessage from "./SenderMessage";
 import ReceiverMessage from "./ReceiverMessage";
 
-const MessageArea = ({ selectedUser, setSelectedUser }) => {
-  const { userData } = useSelector((state) => state.user);
+const MessageArea = () => {
+  const { userData, socket, onlineUsers, selectedUser } = useSelector(
+    (state) => state.user
+  );
+
   const {
     messages,
     isLoading: isLoadingMessages,
@@ -30,6 +34,8 @@ const MessageArea = ({ selectedUser, setSelectedUser }) => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
+  const isOnline = onlineUsers?.includes(selectedUser?._id);
+
   const messageEndRef = useRef(null);
 
   GetMessage();
@@ -38,8 +44,6 @@ const MessageArea = ({ selectedUser, setSelectedUser }) => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Cleanup object URL to prevent memory leaks when the component unmounts
-  // or when the preview URL changes.
   useEffect(() => {
     return () => {
       if (imagePreviewUrl) {
@@ -49,9 +53,11 @@ const MessageArea = ({ selectedUser, setSelectedUser }) => {
   }, [imagePreviewUrl]);
 
   useEffect(() => {
-    // Reset message input when user changes
     setNewMessage("");
     clearImage();
+    if (!selectedUser) {
+      dispatch(setMessages([]));
+    }
   }, [selectedUser]);
 
   const handleSendMessage = async (e) => {
@@ -67,11 +73,10 @@ const MessageArea = ({ selectedUser, setSelectedUser }) => {
         `${serverUrl}/api/message/send/${selectedUser._id}`,
         formData,
         {
-          headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
         }
       );
-      dispatch(setMessages([...messages, res.data]));
+      dispatch(addMessage(res.data));
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -127,7 +132,7 @@ const MessageArea = ({ selectedUser, setSelectedUser }) => {
     <div className="w-full h-full flex flex-col bg-[#343440]">
       <div className="flex items-center p-4 bg-[#23262f] shadow-md h-20 flex-shrink-0 border-b border-gray-700">
         <button
-          onClick={() => setSelectedUser(null)}
+          onClick={() => dispatch(setSelectedUser(null))}
           className="mr-4 text-gray-400 hover:text-white transition-colors lg:hidden"
           aria-label="Back to user list"
         >
@@ -140,13 +145,17 @@ const MessageArea = ({ selectedUser, setSelectedUser }) => {
         />
         <div className="flex flex-col">
           <h2 className="text-lg font-bold text-white">{selectedUser.name}</h2>
-          <div className="flex items-center gap-1.5">
-            <span
-              className="h-2 w-2 rounded-full bg-green-500"
-              title="Online"
-            ></span>
-            <p className="text-xs text-gray-400">Online</p>
-          </div>
+          {isOnline ? (
+            <div className="flex items-center gap-1.5">
+              <span
+                className="h-2 w-2 rounded-full bg-green-500"
+                title="Online"
+              ></span>
+              <p className="text-xs text-gray-400">Online</p>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500">Offline</p>
+          )}
         </div>
       </div>
 
@@ -156,12 +165,13 @@ const MessageArea = ({ selectedUser, setSelectedUser }) => {
           <div className="flex justify-center items-center h-full">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#00e4e3]"></div>
           </div>
-        ) : messages.length === 0 ? (
+        ) : !messages || messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-500">
             <FiMessageCircle size={40} className="mb-2" />
             <p>No messages yet. Say hello!</p>
           </div>
         ) : (
+          messages &&
           messages.map((msg) =>
             msg.sender === userData._id ? (
               <SenderMessage key={msg._id} msg={msg} />

@@ -4,6 +4,7 @@ const SenderMessage = ({ msg }) => {
   const messageTime = new Date(msg.createdAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: true,
   });
 
   return (

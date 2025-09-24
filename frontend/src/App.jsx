@@ -9,12 +9,16 @@ import GetUsers from "./customHooks/GetUsers";
 import { io } from "socket.io-client";
 import { useEffect } from "react";
 import { serverUrl } from "./main";
-import { setSocket, getOnlineUsers } from "./redux/userSlice";
+import { setSocket, setOnlineUsers } from "./redux/userSlice";
+import { addMessage } from "./redux/messageSlice";
 
 const App = () => {
   GetCurrentUser();
   GetUsers();
-  const { userData, socket } = useSelector((state) => state.user);
+  const { userData, socket, onlineUsers, selectedUser } = useSelector(
+    (state) => state.user
+  );
+  const { messages } = useSelector((state) => state.message);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -27,17 +31,29 @@ const App = () => {
       dispatch(setSocket(socketio));
 
       socketio.on("getOnlineUsers", (users) => {
-        dispatch(getOnlineUsers(users));
+        dispatch(setOnlineUsers(users));
       });
 
-      return () => socketio.close();
+      socketio.on("newMessage", (message) => {
+        if (
+          selectedUser?._id === message.sender ||
+          selectedUser?._id === message.receiver
+        ) {
+          dispatch(addMessage(message));
+        }
+      });
+
+      return () => {
+        socketio.off("newMessage");
+        socketio.close();
+      };
     } else {
       if (socket) {
         socket.close();
         dispatch(setSocket(null));
       }
     }
-  }, [userData, dispatch]);
+  }, [userData, dispatch, selectedUser]);
 
   return (
     <Routes>

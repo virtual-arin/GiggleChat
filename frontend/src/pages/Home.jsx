@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
+import { useSelector } from "react-redux";
 import MessageArea from "../components/MessageArea";
 import Sidebar from "../components/Sidebar";
-import GetMessage from "../customHooks/GetMessage";
 
 const Home = () => {
-  const [selectedUser, setSelectedUser] = useState(null);
-  GetMessage();
+  const { selectedUser } = useSelector((state) => state.user);
   return (
     <div className="flex h-screen w-full flex-col lg:flex-row">
       {/* Sidebar */}
@@ -14,18 +13,12 @@ const Home = () => {
           selectedUser ? "hidden" : "flex"
         } h-full w-full lg:flex lg:w-auto`}
       >
-        <Sidebar
-          selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
-        />
+        <Sidebar />
       </div>
 
       {/* Message Area */}
       <div className="h-full w-full">
-        <MessageArea
-          selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
-        />
+        <MessageArea />
       </div>
     </div>
   );
