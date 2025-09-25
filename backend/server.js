@@ -13,7 +13,7 @@ const port = process.env.PORT || 404;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://gigglechat-ckef.onrender.com",
     credentials: true,
   })
 );
