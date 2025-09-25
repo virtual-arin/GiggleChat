@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import GetCurrentUser from "./customHooks/getCurrentUser";
+import GetCurrentUser from "./customHooks/GetCurrentUser";
 import { useDispatch, useSelector } from "react-redux";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
